@@ -1,0 +1,63 @@
+from pathlib import Path
+
+print("Please select a number to Insert, update or view your record")
+print("1)Insert 2)View")
+
+filename = "main.csv"
+
+if Path(filename).is_file():    #checking if the file already exists
+    pass
+else:
+    create = open(filename,"w") #creating file
+    create.close()
+
+while True:
+    mainSelection = int(input())                #self explinatory
+    if mainSelection < 1 or mainSelection > 2:  #self explinatory
+        print("Wrong input please try again")   #self explinatory
+    else:
+        break
+
+def insert():
+    id = input("Please enter you Id ")
+    fullName = input("Please enter you Full name ")
+
+    file = open(filename, "a+")
+
+    file.write(id + "," + fullName + "\n")  #"\n" to break the line after insertinf a record
+    file.close()
+
+def read():
+    inputSearch = input("Enter Id number to find your record ")
+
+    file = open(filename)
+    content = file.read()
+    file.close()
+    contentSplit = content.split(",")
+    data = []
+
+    for x in contentSplit:
+
+        if "\n" in x:               #after splitting the "\n" still came in the strings which was making it difficult to process
+            temp = x.split("\n")    #so split again from "\n" again and save all the entries in the list for processing
+            for y in temp:
+                data.append(y)
+        else:
+            data.append(x)
+
+    flag = True
+
+    for x in range(0, len(data)):
+        if data[x] == inputSearch:
+            print("Identity Number: " + data[x])
+            print("Name: " + data[x + 1])
+            flag = False
+            break
+    if flag:
+        print("Sorry no record available")
+
+if mainSelection == 1:
+    insert()
+
+else:
+    read()
