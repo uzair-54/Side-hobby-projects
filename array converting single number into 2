@@ -1,0 +1,19 @@
+paraArray = [9,10]
+
+def array (list):
+
+    rnarr = [0] * (len(list) * 2)
+    j = 0
+    for x in range (0,len(list)):
+        if list[x] % 2 == 0:
+            rnarr[j] = list[x] / 2
+            rnarr[j + 1] = list[x] / 2
+            j += 2
+        else:
+            rnarr[j] = ((list[x] - 1) / 2) + 1
+            rnarr[j + 1] = ((list[x] - 1) / 2)
+            j += 2
+
+    return rnarr
+
+print(array(paraArray))
