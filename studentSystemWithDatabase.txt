@@ -1,0 +1,130 @@
+import pyodbc
+
+#databBase tables
+"""
+create table students(std_id int primary key, fullName varchar(100), phnNum varchar(100))
+create table courses(crs_id varchar(10) primary key, courseName varchar(100))
+create table studentCourses(crs_id varchar(10) foreign key references courses(crs_id),std_id int foreign key references students(std_id))
+"""
+
+conn = pyodbc.connect(
+    "Driver={SQL Server Native Client 11.0};" #using the driver for connection
+    "Server=DESKTOP-83LHPKS;"                 #defining the server name
+    "Database=studentSystem;"                 #defining the database name
+    "Trusted_Connection=yes;"                 #verifying the connection
+)
+
+cur = conn.cursor()
+
+def insertCourse():
+
+    id = input("Please enter course Id ")                                  
+    name = input("Please enter course name ")                              
+
+    cur.execute("insert into courses values ('{0}','{1}')".format(id,name))  
+    cur.commit()                                                                
+
+def insertStudentCourse():
+
+    cur.execute("select * from students")
+    
+    for row in cur:
+        print(row)
+    
+    cur.execute("select * from courses")
+
+    for row in cur:
+        print(row)
+    
+    crsId = input("Please enter course ID (please make sure the id is present in the course table) \n") 
+    stdId = input("Please enter student ID (please make sure the id is present in the student table) \n")
+
+    cur.execute("insert into studentCourses values ('{0}',{1})".format(crsId,stdId)) 
+    cur.commit()                                       
+
+def insertStudent():
+    
+    id = input("Please enter student Id ")                                          
+    fullName = input("Please enter student full name ")                              
+    phnNumber = input("Please enter student phone number ")                          
+
+    cur.execute("insert into students values ({0},'{1}','{2}')".format(id,fullName,phnNumber))  
+    cur.commit()                                                                 
+
+def readById():
+    
+    inputSearch = input("Enter Id of student to find your record ")                  
+
+    cur.execute("select distinct students.std_id,fullName,phnNum,courseName,courses.crs_id from students left join studentCourses on studentCourses.std_id = students.std_id left join courses on studentCourses.crs_id = courses.crs_id where students.std_id like ({0})".format(inputSearch))   
+    
+    for row in cur:
+        print(row)
+
+def readByCourse():
+    
+    inputSearch = input("Enter Id or name of course to find your record ")                  
+
+    cur.execute("select distinct students.std_id,fullName,phnNum,courseName,courses.crs_id from students left join studentCourses on studentCourses.std_id = students.std_id left join courses on studentCourses.crs_id = courses.crs_id where courses.crs_id like '{0}' or courses.courseName like '{0}'".format(inputSearch))  
+    
+    for row in cur:
+        print(row)
+
+def readByName():
+    
+    inputSearch = input("Enter Name of student to find your record ")                  
+
+    cur.execute("select distinct students.std_id,fullName,phnNum,courseName,courses.crs_id from students left join studentCourses on studentCourses.std_id = students.std_id left join courses on studentCourses.crs_id = courses.crs_id where students.fullName like '%{0}%'".format(inputSearch)) 
+    
+    for row in cur:
+        print(row)
+
+print("Please select a number to Insert, update or view your record") 
+print("1)Insert 2)View ")
+
+while True:
+    
+    mainSelection = int(input())               
+    if mainSelection < 1 or mainSelection > 2:  
+        print("Wrong input please try again")   
+    
+    else:
+        break
+
+if mainSelection == 1:  
+    
+    while True:
+        
+        secSelection = int(input(("what you want to insert 1) Student 2) course 3) student taking a course \n")))
+        if secSelection < 1 or secSelection > 3:  
+            print("Wrong input please try again")   
+        
+        else:
+            break
+    
+    if secSelection == 1:
+        insertStudent()
+    
+    elif secSelection == 2:
+        insertCourse()
+    
+    else:
+        insertStudentCourse()
+
+else:
+    while True:
+        
+        secSelection = int(input(("How would you like to search for records 1) by student Id 2) by student Name 3) by course id or name \n")))
+        if secSelection < 1 or secSelection > 3: 
+            print("Wrong input please try again")
+        
+        else:
+            break
+    
+    if secSelection == 1:
+        readById()
+    
+    elif secSelection == 2:
+        readByName()
+    
+    else:
+        readByCourse()
