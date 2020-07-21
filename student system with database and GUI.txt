@@ -1,0 +1,178 @@
+import pyodbc
+from tkinter import *
+
+#databBase tables
+"""
+create table students(std_id int primary key, fullName varchar(100), phnNum varchar(100))
+create table courses(crs_id varchar(10) primary key, courseName varchar(100))
+create table studentCourses(crs_id varchar(10) foreign key references courses(crs_id),std_id int foreign key references students(std_id))
+"""
+root = Tk()
+root.title("Student Management System")
+
+lble1Crse = Label(root,text="Enter Course ID")
+lble2Crse = Label(root,text="Enter Course Name")
+lblStd1 = Label(root,text = "Enter Student ID")
+lblStd2 = Label(root,text = "Enter Student Name")
+lblStd3 = Label(root,text = "Enter Student Phone number")
+lblStdCrse1 = Label(root,text = "Enter course ID (make sure course is present above)")
+lblStdCrse2 = Label(root,text = "Enter Student ID (make sure student is present above)")
+lblReadName = Label(root,text = "Enter Student Name")
+lblReadID = Label(root, text = "Enter Student id")
+lblReadCrse = Label(root, text = "Enter Id or name of the course")
+
+entNameCrse = Entry(root)
+entIdCrse = Entry(root)
+entIdStd = Entry(root)
+entNameStd = Entry(root)
+entPhnStd = Entry(root)
+entStdCrse1 = Entry(root)
+entStdCrse2 = Entry(root)
+entReadName = Entry(root)
+entReadID = Entry(root)
+entReadCrse = Entry(root)
+
+conn = pyodbc.connect(
+    "Driver={SQL Server Native Client 11.0};" #using the driver for connection
+    "Server=DESKTOP-83LHPKS;"                 #defining the server name
+    "Database=studentSystem;"                 #defining the database name
+    "Trusted_Connection=yes;"                 #verifying the connection
+)
+
+cur = conn.cursor()
+
+def submitCrse():
+    id = entIdCrse.get()
+    name = entNameCrse.get()
+
+    cur.execute("insert into courses values ('{0}','{1}')".format(id,name))  
+    cur.commit()                                                                
+    lbl = Label(root,text="record Inserted").pack()
+   # root.destroy()
+
+def insertCourse():
+
+    lble1Crse.pack()
+    entIdCrse.pack()
+
+    lble2Crse.pack()
+    entNameCrse.pack()
+
+    btnSub = Button(root,text="Submit",command = submitCrse).pack()
+
+def submitStdCrse():
+
+    crsID = entStdCrse1.get()
+    stdId = entStdCrse2.get()
+
+    cur.execute("insert into studentCourses values ('{0}',{1})".format(crsID,stdId)) 
+    cur.commit() 
+
+def insertStudentCourse():
+    
+
+    cur.execute("Select * from courses")
+    for x in cur:
+        lbl = Label(root, text = x).pack() 
+    
+    cur.execute("Select std_id,fullName from students")
+    for x in cur:
+        lbl = Label(root, text = x).pack() 
+    
+    lblStdCrse1.pack()
+    entStdCrse1.pack()
+
+    lblStdCrse2.pack()
+    entStdCrse2.pack()
+
+    btnSub = Button(root,text="Submit",command = submitStdCrse).pack()
+
+def submitStd():
+    
+    id = entIdStd.get()
+    fullName = entNameStd.get()
+    phnNumber = entPhnStd.get()
+
+    cur.execute("insert into students values ({0},'{1}','{2}')".format(id,fullName,phnNumber))  
+    cur.commit()
+    lbl = Label(root,text="record Inserted").pack()
+
+def insertStudent():
+
+    lblStd1.pack()
+    entIdStd.pack()
+
+    lblStd2.pack()
+    entNameStd.pack()
+
+    lblStd3.pack()
+    entPhnStd.pack()
+
+    btnSubStd = Button(root,text="Submit",command = submitStd).pack()
+
+def submitReadID():
+
+    inputSearch = entReadID.get()
+    cur.execute("select distinct students.std_id,fullName,phnNum,courseName,courses.crs_id from students left join studentCourses on studentCourses.std_id = students.std_id left join courses on studentCourses.crs_id = courses.crs_id where students.std_id like ({0})".format(inputSearch))   
+    
+    for x in cur:
+        lbl = Label(root,text = x).pack()
+
+def readById():
+
+    lblReadID.pack()
+    entReadID.pack()
+
+    btnSubStd = Button(root,text="Submit",command = submitReadID).pack()            
+
+def submitReadCrse():
+
+    inputSearch = entReadCrse.get()
+
+    cur.execute("select distinct students.std_id,fullName,phnNum,courseName,courses.crs_id from students left join studentCourses on studentCourses.std_id = students.std_id left join courses on studentCourses.crs_id = courses.crs_id where courses.crs_id like '{0}' or courses.courseName like '%{0}%'".format(inputSearch))  
+
+    for x in cur:
+        lbl = Label(root,text = x).pack()
+
+def readByCourse():
+    
+    lblReadCrse.pack()
+    entReadCrse.pack()
+
+    btnSubStd = Button(root,text="Submit",command = submitReadCrse).pack()            
+
+def submitReadName():
+    
+    inputSearch = entReadName.get()
+    cur.execute("select distinct students.std_id,fullName,phnNum,courseName,courses.crs_id from students left join studentCourses on studentCourses.std_id = students.std_id left join courses on studentCourses.crs_id = courses.crs_id where students.fullName like '%{0}%'".format(inputSearch)) 
+
+    for x in cur:
+        lbl = Label(root, text = x).pack() 
+
+def readByName():
+    
+    lblReadName.pack()
+    entReadName.pack()
+
+    btnSubStd = Button(root,text="Submit",command = submitReadName).pack()
+
+def insertBtn():
+    
+    global root
+    
+    btnStdt = Button(root,text="Insert Student",command = insertStudent).pack()
+    btnCrse = Button(root,text="Insert Course",command = insertCourse).pack()
+    btnStdtCrse = Button(root,text="Insert Student taking a Course", command = insertStudentCourse).pack()
+    
+def viewBtn():
+    
+    global root
+
+    btnByName = Button(root,text="Search by Name",command = readByName).pack()
+    btnById = Button(root,text="Search by ID",command = readById).pack()
+    btnByCourse = Button(root,text="Search by Course", command = readByCourse).pack()
+    
+btnInsert = Button(root,text="Insert",command = insertBtn).pack()
+btnView = Button(root,text="View",command = viewBtn).pack()
+
+mainloop()
